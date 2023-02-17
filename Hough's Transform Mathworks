@@ -1,0 +1,37 @@
+#The code here is derived and modified from MATLAB's Houghs Transform documentation on Line and Circle Detection problems on a custom image locally imported to the PC.
+
+clc;
+
+hero=imread("D:\flash.png",'png'); #custom image stored locally in PC's hard drive
+
+BW=edge(hero,'canny'); %Edge Detection using Canny
+
+[H,T,R] = hough(BW);
+imshow(H,[],'XData',T,'YData',R,... %H is the binary accumulator matrix, [] are the low and high limits, 
+            'InitialMagnification','fit'); %Data in X axis is theta, in Y axis is rho
+xlabel('\theta'), ylabel('\rho');
+axis on, axis normal, hold on;
+
+P=houghpeaks(H,5,'threshold',ceil(0.3*max(H(:)))); %Input Accumulator array, 5 peaks, threshold limit is 0.3 times the max of the accumulatpr array
+x = T(P(:,2)); y = R(P(:,1)); %puts Theta, rho values from peaks, ,1 gives row; ,2 gives column
+plot(x,y,'s','color','white');
+
+lines = houghlines(BW,T,R,P,'FillGap',5,'MinLength',23);
+figure, imshow(hero), hold on %Fill Gap- Minimum distance between two lines
+max_len = 0;                  %Min Length- Length of the hough lines formed
+
+for k = 1:length(lines)
+   xy = [lines(k).point1; lines(k).point2];
+   plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
+
+   % Plot beginnings and ends of lines
+   plot(xy(1,1),xy(1,2),'x','LineWidth',2,'Color','yellow');
+   plot(xy(2,1),xy(2,2),'x','LineWidth',2,'Color','red');
+
+   % Determine the endpoints of the longest line segment
+   len = norm(lines(k).point1 - lines(k).point2);
+   if ( len > max_len)
+      max_len = len;
+      xy_long = xy;
+   end
+end
